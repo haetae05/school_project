@@ -1,14 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/models/ripple_state.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   
   @override
@@ -28,24 +30,57 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final rippleState = ref.watch(rippleStateProvider);
+    
+    // Adjust animation speed and colors based on state
+    String stateText = "고요함";
+    Color shadowColor = const Color(0xFF1A504A); // Emerald Green
+    double spreadMultiplier = 20;
+
+    switch (rippleState) {
+      case RippleState.calm:
+        _controller.duration = const Duration(seconds: 4);
+        stateText = "고요함";
+        break;
+      case RippleState.walking:
+        _controller.duration = const Duration(seconds: 2);
+        stateText = "걷는 중";
+        spreadMultiplier = 30;
+        break;
+      case RippleState.busy:
+        _controller.duration = const Duration(milliseconds: 800);
+        stateText = "바쁨";
+        spreadMultiplier = 40;
+        shadowColor = Colors.orange;
+        break;
+      case RippleState.danger:
+        _controller.duration = const Duration(milliseconds: 300);
+        stateText = "위험 구역";
+        spreadMultiplier = 60;
+        shadowColor = Colors.red;
+        break;
+    }
+    
+    // Ensure animation continues with new duration
+    if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
+
     return Scaffold(
       body: Stack(
         children: [
-          // Background Gradient (Deep Ocean Blue to Emerald Green)
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0B202A), // Deep Ocean Blue
-                  Color(0xFF1A504A), // Emerald Green
+                  Color(0xFF0B202A),
+                  Color(0xFF1A504A),
                 ],
               ),
             ),
           ),
-          
-          // Image Fallback Background (Pollinations.ai)
           Opacity(
             opacity: 0.3,
             child: Image.network(
@@ -55,23 +90,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               height: double.infinity,
             ),
           ),
-
-          // Glassmorphism Ripple Orb
           Center(
             child: AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
                 return Container(
-                  width: 200 + (_controller.value * 20),
-                  height: 200 + (_controller.value * 20),
+                  width: 200 + (_controller.value * spreadMultiplier),
+                  height: 200 + (_controller.value * spreadMultiplier),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.1),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF1A504A).withOpacity(0.5),
+                        color: shadowColor.withOpacity(0.5),
                         blurRadius: 50,
-                        spreadRadius: _controller.value * 20,
+                        spreadRadius: _controller.value * spreadMultiplier,
                       )
                     ],
                   ),
@@ -92,10 +125,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             ],
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            "잔잔함",
-                            style: TextStyle(
+                            stateText,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 24,
                               fontWeight: FontWeight.w300,
