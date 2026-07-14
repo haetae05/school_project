@@ -1,0 +1,28 @@
+name: my_healing_app
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.4.9
+  dio: ^5.4.0
+  dio_cache_interceptor: ^3.4.4
+  just_audio: ^0.9.36
+  flutter_background_geolocation: ^4.14.3
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audios/
+    - assets/data/
